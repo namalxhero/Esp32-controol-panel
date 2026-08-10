@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/bg_root"
+    android:padding="24dp">
+
+    <!-- Bezel -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/oled_bezel"
+        android:padding="18dp">
+
+        <com.nipuna.esp32controller.OledView
+            android:id="@+id/oledView"
+            android:layout_width="320dp"
+            android:layout_height="160dp"
+            android:background="@color/oled_pixel_off" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/oledMeta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="128 x 64 · waiting for frames…"
+        android:textColor="@color/text_secondary"
+        android:fontFamily="monospace"
+        android:textSize="12sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClearOled"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Clear"
+        android:textColor="@color/accent_amber" />
+
+</LinearLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cmdChip"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:background="@drawable/chip_bg"
+    android:paddingHorizontal="14dp"
+    android:paddingVertical="8dp"
+    android:textColor="@color/accent_cyan"
+    android:fontFamily="monospace"
+    android:textSize="12sp"
+    tools:text="LED_ON"
+    xmlns:tools="http://schemas.android.com/tools" />

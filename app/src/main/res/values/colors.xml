@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_root">#0A0E14</color>
+    <color name="bg_surface">#111826</color>
+    <color name="bg_surface_alt">#161F2E</color>
+    <color name="accent_cyan">#00E5C7</color>
+    <color name="accent_cyan_dim">#0A3A34</color>
+    <color name="accent_amber">#FFB74D</color>
+    <color name="text_primary">#E8F1F2</color>
+    <color name="text_secondary">#7C8B9A</color>
+    <color name="oled_pixel_on">#00E5C7</color>
+    <color name="oled_pixel_off">#020403</color>
+    <color name="status_connected">#4CD97B</color>
+    <color name="status_disconnected">#FF5C5C</color>
+    <color name="divider">#22303F</color>
+</resources>

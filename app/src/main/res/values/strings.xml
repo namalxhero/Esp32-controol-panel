@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ESP32 OLED Controller</string>
+    <string name="tab_oled">OLED View</string>
+    <string name="tab_terminal">Terminal</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="not_connected">Not connected</string>
+    <string name="type_command">Type a command…</string>
+</resources>

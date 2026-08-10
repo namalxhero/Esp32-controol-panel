@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- CP210x (Silicon Labs) - common on ESP32 DevKit -->
+    <usb-device vendor-id="4292" product-id="60000" />
+    <!-- CH340 / CH341 -->
+    <usb-device vendor-id="6790" product-id="29987" />
+    <!-- FTDI FT232R -->
+    <usb-device vendor-id="1027" product-id="24577" />
+    <!-- Espressif native USB CDC (ESP32-S2/S3/C3) -->
+    <usb-device vendor-id="12346" product-id="4097" />
+    <usb-device vendor-id="4292" product-id="60001" />
+</resources>
