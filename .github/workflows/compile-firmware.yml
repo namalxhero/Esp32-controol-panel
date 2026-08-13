@@ -1,0 +1,38 @@
+name: Compile ESP32 Firmware
+
+on:
+  repository_dispatch:
+    types: [compile-request]
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write submitted code
+        run: |
+          mkdir -p firmware/firmware
+          echo "${{ github.event.client_payload.code_b64 }}" | base64 -d > firmware/firmware/firmware.ino
+
+      - name: Install arduino-cli
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "$PWD/bin" >> $GITHUB_PATH
+
+      - name: Install ESP32 core + libraries
+        run: |
+          arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          arduino-cli core install esp32:esp32 --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          arduino-cli lib install "Adafruit GFX Library" "Adafruit SSD1306" "NimBLE-Arduino"
+
+      - name: Compile
+        run: |
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 firmware/firmware --output-dir build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-bin
+          path: build/firmware.ino.bin
+          retention-days: 1
