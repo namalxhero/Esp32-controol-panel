@@ -88,6 +88,89 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
     </LinearLayout>
 
+    <!-- Code-run panel: language toggle + editor + run/flash buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/bg_surface_alt"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/codeModeToggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnModePython"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Python"
+                    android:checked="true" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnModeCpp"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="C++" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFlashMicroPython"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Flash MicroPython"
+                android:textSize="11sp"
+                android:textColor="@color/accent_cyan" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/codeEditorInput"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@color/bg_root"
+            android:fontFamily="monospace"
+            android:gravity="top|start"
+            android:hint="print('hello from ESP32')"
+            android:inputType="textMultiLine"
+            android:padding="10dp"
+            android:textColor="@color/text_secondary"
+            android:textColorHint="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRunCode"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="end"
+            android:text="Run"
+            android:textSize="12sp"
+            app:backgroundTint="@color/accent_cyan_dim"
+            android:textColor="@color/accent_cyan"
+            app:cornerRadius="18dp" />
+    </LinearLayout>
+
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
