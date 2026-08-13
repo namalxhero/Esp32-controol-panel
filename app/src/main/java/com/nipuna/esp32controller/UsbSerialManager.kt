@@ -28,14 +28,7 @@ class UsbSerialManager(private val context: Context) {
         const val BAUD_RATE = 115200
     }
 
-    interface Listener {
-        fun onConnected(deviceName: String)
-        fun onDisconnected()
-        fun onLineReceived(line: String)
-        fun onError(message: String)
-    }
-
-    var listener: Listener? = null
+    var listener: TransportListener? = null
     private var port: UsbSerialPort? = null
     private var ioManager: SerialInputOutputManager? = null
     private val executor = Executors.newSingleThreadExecutor()
