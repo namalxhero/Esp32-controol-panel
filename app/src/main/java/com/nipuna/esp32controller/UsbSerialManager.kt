@@ -20,7 +20,7 @@ import java.util.concurrent.Executors
  * Wraps usb-serial-for-android to give a small connect/send/receive API,
  * driven purely by OTG USB (no Bluetooth / Wi-Fi involved).
  */
-class UsbSerialManager(private val context: Context) {
+class UsbSerialManager(private val context: Context) : Transport {
 
     companion object {
         private const val TAG = "UsbSerialManager"
@@ -157,7 +157,7 @@ class UsbSerialManager(private val context: Context) {
         }
     }
 
-    fun send(command: String) {
+    override fun send(command: String) {
         val p = port
         if (p == null) {
             listener?.onError("Not connected")
@@ -171,9 +171,9 @@ class UsbSerialManager(private val context: Context) {
         }
     }
 
-    fun isConnected(): Boolean = port != null
+    override fun isConnected(): Boolean = port != null
 
-    fun disconnect() {
+    override fun disconnect() {
         try {
             ioManager?.stop()
             port?.close()
