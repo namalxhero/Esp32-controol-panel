@@ -29,11 +29,10 @@ class MainActivity : AppCompatActivity(), TransportListener {
     private lateinit var transportToggle: MaterialButtonToggleGroup
     private lateinit var pagerAdapter: ViewPagerAdapter
 
-    // -- Code-run UI (add these ids to activity_main.xml — see notes below) --
-    private lateinit var codeModeToggle: MaterialButtonToggleGroup // btnModePython / btnModeCpp
-    private lateinit var codeEditor: EditText                     // codeEditorInput
-    private lateinit var btnRunCode: MaterialButton                // btnRunCode
-    private lateinit var btnFlashMicroPython: MaterialButton       // btnFlashMicroPython
+    private lateinit var codeModeToggle: MaterialButtonToggleGroup
+    private lateinit var codeEditor: EditText
+    private lateinit var btnRunCode: MaterialButton
+    private lateinit var btnFlashMicroPython: MaterialButton
 
     /** true = BLE selected, false = USB selected (default) */
     private var useBle = false
@@ -44,7 +43,6 @@ class MainActivity : AppCompatActivity(), TransportListener {
         MicroPythonRunner { raw -> activeManager().send(raw) }
     }
 
-    // Fill these in from a settings screen / EncryptedSharedPreferences — never hardcode a real token.
     private val cloudBuildClient by lazy {
         CloudBuildClient(
             githubToken = getGithubToken(),
@@ -151,7 +149,7 @@ class MainActivity : AppCompatActivity(), TransportListener {
         }
     }
 
-    private fun activeManager() = if (useBle) bleManager else usbManager
+    private fun activeManager(): Transport = if (useBle) bleManager else usbManager
 
     private fun requestBleThenConnect() {
         if (bleManager.hasBlePermissions()) {
