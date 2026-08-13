@@ -28,7 +28,7 @@ import java.util.UUID
  * ESP32 firmware side needs a matching NimBLE UART service with the
  * same three UUIDs to talk to this.
  */
-class BleSerialManager(private val context: Context) {
+class BleSerialManager(private val context: Context) : Transport {
 
     companion object {
         private val SERVICE_UUID = UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
@@ -216,7 +216,7 @@ class BleSerialManager(private val context: Context) {
         }
     }
 
-    fun send(command: String) {
+    override fun send(command: String) {
         val g = gatt
         val c = rxChar
         if (g == null || c == null) {
@@ -240,9 +240,9 @@ class BleSerialManager(private val context: Context) {
         }
     }
 
-    fun isConnected(): Boolean = rxChar != null
+    override fun isConnected(): Boolean = rxChar != null
 
-    fun disconnect() {
+    override fun disconnect() {
         stopScan()
         try {
             gatt?.disconnect()
