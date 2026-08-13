@@ -1,10 +1,14 @@
 /*
-  ESP32 OLED Controller — example firmware (USB-serial + BLE)
-  --------------------------------------------------------------
+  ESP32 OLED Controller — example firmware (USB-serial + BLE + WiFi OTA)
+  ------------------------------------------------------------------------
   Matches the protocol the Android app (Protocol.kt) expects, sent over
   EITHER USB-serial at 115200 baud OR BLE (Nordic UART Service style),
   whichever the phone is connected through. No physical OLED needed —
   the phone app IS the display.
+
+  Also runs a WiFi OTA HTTP endpoint (/update) so the app's CloudBuildClient
+  can push freshly-compiled .bin files over the network after a GitHub
+  Actions build finishes.
 
   Wire format (one line each, newline terminated):
     #OLED:<base64 of 1024 bytes>   -> full 128x64 1-bit framebuffer (SSD1306 layout:
@@ -18,13 +22,16 @@
   BLE UUIDs below MUST match BleSerialManager.kt on the Android side.
 
   Requires: Adafruit_GFX, Adafruit_SSD1306, NimBLE-Arduino (h2zero) — all via
-  Library Manager. NimBLE-Arduino 1.4.x callback style used below.
+  Library Manager. WiFi/Update/WebServer are built into the ESP32 Arduino core.
 */
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "base64.h" // built into ESP32 core (base64.h / base64.cpp)
 #include <NimBLEDevice.h>
+#include <WiFi.h>
+#include <Update.h>
+#include <WebServer.h>
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -73,6 +80,11 @@ class RxCallbacks : public NimBLECharacteristicCallbacks {
   }
 };
 
+// ---- WiFi OTA ----
+const char* WIFI_SSID = "YOUR_WIFI";
+const char* WIFI_PASSWORD = "YOUR_PASSWORD";
+WebServer otaServer(80);
+
 void setup() {
   Serial.begin(115200);
   delay(300);
@@ -81,6 +93,7 @@ void setup() {
   display.clearDisplay();
 
   setupBLE();
+  setupOta();
 
   sendCommandList();
   sendLog("ESP32 ready.");
@@ -94,6 +107,8 @@ void loop() {
     if (cmd.length() > 0) handleCommand(cmd);
   }
   // (BLE incoming commands are handled asynchronously in RxCallbacks::onWrite)
+
+  otaServer.handleClient();
 
   // 2. Push a fresh OLED frame ~4x/second so the app mirrors what would be on screen
   if (millis() - lastFrame > 250) {
@@ -128,6 +143,36 @@ void setupBLE() {
   NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->start();
+}
+
+void setupOta() {
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  unsigned long wifiStart = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - wifiStart < 15000) {
+    delay(300);
+  }
+  if (WiFi.status() != WL_CONNECTED) {
+    sendLog("WiFi connect failed — OTA endpoint unavailable, BLE/USB still work");
+    return;
+  }
+  sendLog("WiFi connected, IP: " + WiFi.localIP().toString());
+
+  otaServer.on("/update", HTTP_POST, []() {
+    otaServer.sendHeader("Connection", "close");
+    otaServer.send(200, "text/plain", Update.hasError() ? "FAIL" : "OK");
+    delay(500);
+    ESP.restart();
+  }, []() {
+    HTTPUpload& upload = otaServer.upload();
+    if (upload.status == UPLOAD_FILE_START) {
+      Update.begin(UPDATE_SIZE_UNKNOWN);
+    } else if (upload.status == UPLOAD_FILE_WRITE) {
+      Update.write(upload.buf, upload.currentSize);
+    } else if (upload.status == UPLOAD_FILE_END) {
+      Update.end(true);
+    }
+  });
+  otaServer.begin();
 }
 
 /** Sends one logical line over BLE notify, chunked to fit the negotiated MTU. */
