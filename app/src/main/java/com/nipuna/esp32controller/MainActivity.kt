@@ -1,22 +1,40 @@
 package com.nipuna.esp32controller
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import androidx.viewpager2.widget.ViewPager2
 
-class MainActivity : AppCompatActivity(), UsbSerialManager.Listener {
+class MainActivity : AppCompatActivity(), TransportListener {
 
     private lateinit var usbManager: UsbSerialManager
+    private lateinit var bleManager: BleSerialManager
     private lateinit var viewPager: ViewPager2
     private lateinit var statusDot: View
     private lateinit var statusText: TextView
     private lateinit var btnConnect: MaterialButton
+    private lateinit var transportToggle: MaterialButtonToggleGroup
     private lateinit var pagerAdapter: ViewPagerAdapter
+
+    /** true = BLE selected, false = USB selected (default) */
+    private var useBle = false
+
+    private val blePermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+            if (granted.values.all { it }) {
+                bleManager.connect()
+            } else {
+                statusText.text = "Bluetooth permission denied"
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +45,7 @@ class MainActivity : AppCompatActivity(), UsbSerialManager.Listener {
         statusDot = findViewById(R.id.statusDot)
         statusText = findViewById(R.id.statusText)
         btnConnect = findViewById(R.id.btnConnect)
+        transportToggle = findViewById(R.id.transportToggle)
         viewPager = findViewById(R.id.viewPager)
 
         pagerAdapter = ViewPagerAdapter(this)
@@ -41,23 +60,52 @@ class MainActivity : AppCompatActivity(), UsbSerialManager.Listener {
         usbManager.listener = this
         usbManager.registerReceiver()
 
-        btnConnect.setOnClickListener {
-            if (usbManager.isConnected()) {
+        bleManager = BleSerialManager(this)
+        bleManager.listener = this
+
+        transportToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            useBle = checkedId == R.id.btnTransportBle
+            if (activeManager().isConnected()) {
                 usbManager.disconnect()
+                bleManager.disconnect()
+            }
+        }
+
+        btnConnect.setOnClickListener {
+            if (activeManager().isConnected()) {
+                activeManager().disconnect()
+            } else if (useBle) {
+                requestBleThenConnect()
             } else {
                 statusText.text = "Requesting USB permission…"
                 usbManager.connect()
             }
         }
 
-        // If launched via USB_DEVICE_ATTACHED intent-filter, try connecting right away.
         if (intent?.action == "android.hardware.usb.action.USB_DEVICE_ATTACHED") {
+            useBle = false
             usbManager.connect()
         }
     }
 
+    private fun activeManager() = if (useBle) bleManager else usbManager
+
+    private fun requestBleThenConnect() {
+        if (bleManager.hasBlePermissions()) {
+            bleManager.connect()
+            return
+        }
+        val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        blePermissionLauncher.launch(perms)
+    }
+
     fun sendCommand(command: String) {
-        usbManager.send(command)
+        activeManager().send(command)
     }
 
     private fun oledFragment(): OledFragment? =
@@ -66,7 +114,7 @@ class MainActivity : AppCompatActivity(), UsbSerialManager.Listener {
     private fun terminalFragment(): TerminalFragment? =
         supportFragmentManager.fragments.filterIsInstance<TerminalFragment>().firstOrNull()
 
-    // ---- UsbSerialManager.Listener callbacks (arrive on the IO thread) ----
+    // ---- TransportListener callbacks (may arrive on a background thread) ----
 
     override fun onConnected(deviceName: String) {
         runOnUiThread {
@@ -112,5 +160,6 @@ class MainActivity : AppCompatActivity(), UsbSerialManager.Listener {
         super.onDestroy()
         usbManager.disconnect()
         usbManager.unregisterReceiver()
+        bleManager.disconnect()
     }
 }
