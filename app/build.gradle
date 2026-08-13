@@ -48,4 +48,11 @@ dependencies {
 
     // USB Serial (CP2102 / CH340 / FTDI / CDC-ACM support for ESP32 boards)
     implementation 'com.github.mik3y:usb-serial-for-android:3.7.0'
+
+    // BLE + Cloud-build network calls (CloudBuildClient.kt uses OkHttp)
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // JSON parsing (CloudBuildClient.kt uses org.json — built into Android,
+    // but this ensures a consistent/newer JSON implementation on all API levels)
+    implementation 'org.json:json:20240303'
 }
